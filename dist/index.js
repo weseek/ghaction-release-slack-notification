@@ -3397,15 +3397,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const webhook_1 = __webpack_require__(736);
 class Slack {
     /**
-     * Check if message mention is needed
-     * @param {string} mentionCondition mention condition
-     * @param {string} status job status
-     * @returns {boolean}
-     */
-    isMention(condition, status) {
-        return condition === 'always' || condition === status;
-    }
-    /**
      * Generate slack payload
      * @param {string} mention
      * @param {string} mentionCondition
@@ -3419,7 +3410,7 @@ class Slack {
             };
             baseBlock['text'] = {
                 type: 'mrkdwn',
-                text: `https://github.com/weseek/growi/releases/tag/${created_tag}`
+                text: `https://github.com/weseek/growi/releases/tag/v${created_tag}`
             };
             const attachments = {
                 color: '#2cbe4e',

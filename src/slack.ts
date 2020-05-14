@@ -1,30 +1,12 @@
-import * as github from '@actions/github';
-import {Octokit} from '@octokit/rest';
-import {MessageAttachment, MrkdwnElement} from '@slack/types';
+import {MessageAttachment} from '@slack/types';
 import {
   IncomingWebhook,
   IncomingWebhookSendArguments,
   IncomingWebhookResult,
   IncomingWebhookDefaultArguments
 } from '@slack/webhook';
-import {Context} from '@actions/github/lib/context';
-
-interface Accessory {
-  color: string;
-  result: string;
-}
 
 export class Slack {
-  /**
-   * Check if message mention is needed
-   * @param {string} mentionCondition mention condition
-   * @param {string} status job status
-   * @returns {boolean}
-   */
-  private isMention(condition: string, status: string): boolean {
-    return condition === 'always' || condition === status;
-  }
-
   /**
    * Generate slack payload
    * @param {string} mention
@@ -42,7 +24,7 @@ export class Slack {
 
     baseBlock['text'] = {
       type: 'mrkdwn',
-      text: `https://github.com/weseek/growi/releases/tag/${created_tag}`
+      text: `https://github.com/weseek/growi/releases/tag/v${created_tag}`
     };
 
     const attachments: MessageAttachment = {
