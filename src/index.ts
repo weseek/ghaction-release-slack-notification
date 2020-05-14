@@ -7,7 +7,8 @@ async function run() {
   try {
     const url: string = process.env.SLACK_WEBHOOK || core.getInput('url');
     const slackOptions: IncomingWebhookDefaultArguments = {
-      channel: core.getInput('channel')
+      channel: core.getInput('channel'),
+      icon_emoji: 'tada'
     };
     const created_tag: string = core.getInput('created_tag');
 

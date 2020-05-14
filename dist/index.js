@@ -5312,7 +5312,8 @@ function run() {
         try {
             const url = process.env.SLACK_WEBHOOK || core.getInput('url');
             const slackOptions = {
-                channel: core.getInput('channel')
+                channel: core.getInput('channel'),
+                icon_emoji: 'tada'
             };
             const created_tag = core.getInput('created_tag');
             if (url === '') {
