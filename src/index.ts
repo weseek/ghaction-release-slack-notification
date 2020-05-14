@@ -9,7 +9,6 @@ async function run() {
     const slackOptions: IncomingWebhookDefaultArguments = {
       channel: core.getInput('channel')
     };
-    const token: string = core.getInput('token');
     const created_tag: string = core.getInput('created_tag');
 
     if (url === '') {
