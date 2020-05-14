@@ -11128,7 +11128,7 @@ class Slack {
     generatePayload(created_tag) {
         return __awaiter(this, void 0, void 0, function* () {
             const { owner, repo } = this.context.repo;
-            const repoUrl = `https://github.com/${owner}/${repo}`;
+            const repoUrl = `https://github.com/${owner}/${repo}/releases/tag/v${created_tag}`;
             const text = `*Release v${created_tag}* Succeeded`;
             const block = {
                 type: 'section',

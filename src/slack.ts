@@ -19,7 +19,7 @@ export class Slack {
     created_tag: string
   ): Promise<IncomingWebhookSendArguments> {
     const {owner, repo} = this.context.repo;
-    const repoUrl: string = `https://github.com/${owner}/${repo}`;
+    const repoUrl: string = `https://github.com/${owner}/${repo}/releases/tag/v${created_tag}`;
 
     const text: string = `*Release v${created_tag}* Succeeded`;
 
