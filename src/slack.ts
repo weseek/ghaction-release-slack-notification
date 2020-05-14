@@ -16,25 +16,24 @@ export class Slack {
    * @returns {IncomingWebhookSendArguments}
    */
   public async generatePayload(
-    created_tag: string,
+    created_tag: string
   ): Promise<IncomingWebhookSendArguments> {
     const {owner, repo} = this.context.repo;
     const repoUrl: string = `https://github.com/${owner}/${repo}`;
 
     const text: string = `*Release v${created_tag}* Succeeded`;
 
-    let baseBlock = {
-      type: 'section'
-    };
-
-    baseBlock['text'] = {
-      type: 'mrkdwn',
-      text: `${repoUrl}`
+    const block = {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `${repoUrl}`
+      }
     };
 
     const attachments: MessageAttachment = {
       color: '#2cbe4e',
-      blocks: [baseBlock]
+      blocks: [block]
     };
 
     const payload: IncomingWebhookSendArguments = {
