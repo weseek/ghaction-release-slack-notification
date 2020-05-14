@@ -1,37 +1,16 @@
 import * as core from '@actions/core';
 import {IncomingWebhookDefaultArguments} from '@slack/webhook';
 
-import {validateStatus, isValidCondition} from './utils';
 import {Slack} from './slack';
 
 async function run() {
   try {
-    const status: string = validateStatus(
-      core.getInput('type', {required: true}).toLowerCase()
-    );
-    const jobName: string = core.getInput('job_name', {required: true});
     const url: string = process.env.SLACK_WEBHOOK || core.getInput('url');
-    let mention: string = core.getInput('mention');
-    let mentionCondition: string = core.getInput('mention_if').toLowerCase();
     const slackOptions: IncomingWebhookDefaultArguments = {
-      username: core.getInput('username'),
       channel: core.getInput('channel'),
-      icon_emoji: core.getInput('icon_emoji')
+      icon_emoji: 'tada'
     };
-    const commitFlag: boolean = core.getInput('commit') === 'true';
-    const token: string = core.getInput('token');
-    const isCompactMode: boolean = core.getInput('isCompactMode') === 'true';
-    const isReleaseMode: boolean = core.getInput('isReleaseMode') === 'true';
     const created_tag: string = core.getInput('created_tag');
-
-    if (mention && !isValidCondition(mentionCondition)) {
-      mention = '';
-      mentionCondition = '';
-      console.warn(`
-      Ignore slack message metion:
-      mention_if: ${mentionCondition} is invalid
-      `);
-    }
 
     if (url === '') {
       throw new Error(`[Error] Missing Slack Incoming Webhooks URL.
@@ -41,17 +20,7 @@ async function run() {
     }
 
     const slack = new Slack();
-    const payload = await slack.generatePayload(
-      jobName,
-      status,
-      mention,
-      mentionCondition,
-      commitFlag,
-      isCompactMode,
-      isReleaseMode,
-      created_tag,
-      token
-    );
+    const payload = await slack.generatePayload(created_tag);
     console.info(`Generated payload for slack: ${JSON.stringify(payload)}`);
 
     await slack.notify(url, slackOptions, payload);

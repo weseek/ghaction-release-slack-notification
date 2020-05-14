@@ -2229,37 +2229,6 @@ function paginatePlugin(octokit) {
 
 /***/ }),
 
-/***/ 163:
-/***/ (function(__unusedmodule, exports) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const jobStatuses = ['success', 'failure', 'cancelled'];
-const metionConditions = [...jobStatuses, 'always'];
-function isValid(target, validList) {
-    return validList.includes(target);
-}
-/**
- * Check if status entered by user is allowed by GitHub Actions.
- * @param {string} jobStatus
- * @returns {string|Error}
- */
-function validateStatus(jobStatus) {
-    if (!isValid(jobStatus, jobStatuses)) {
-        throw new Error('Invalid type parameter');
-    }
-    return jobStatus;
-}
-exports.validateStatus = validateStatus;
-function isValidCondition(condition) {
-    return isValid(condition, metionConditions);
-}
-exports.isValidCondition = isValidCondition;
-
-
-/***/ }),
-
 /***/ 168:
 /***/ (function(module) {
 
@@ -5337,34 +5306,16 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
-const utils_1 = __webpack_require__(163);
 const slack_1 = __webpack_require__(777);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const status = utils_1.validateStatus(core.getInput('type', { required: true }).toLowerCase());
-            const jobName = core.getInput('job_name', { required: true });
             const url = process.env.SLACK_WEBHOOK || core.getInput('url');
-            let mention = core.getInput('mention');
-            let mentionCondition = core.getInput('mention_if').toLowerCase();
             const slackOptions = {
-                username: core.getInput('username'),
                 channel: core.getInput('channel'),
-                icon_emoji: core.getInput('icon_emoji')
+                icon_emoji: 'tada'
             };
-            const commitFlag = core.getInput('commit') === 'true';
-            const token = core.getInput('token');
-            const isCompactMode = core.getInput('isCompactMode') === 'true';
-            const isReleaseMode = core.getInput('isReleaseMode') === 'true';
             const created_tag = core.getInput('created_tag');
-            if (mention && !utils_1.isValidCondition(mentionCondition)) {
-                mention = '';
-                mentionCondition = '';
-                console.warn(`
-      Ignore slack message metion:
-      mention_if: ${mentionCondition} is invalid
-      `);
-            }
             if (url === '') {
                 throw new Error(`[Error] Missing Slack Incoming Webhooks URL.
       Please configure "SLACK_WEBHOOK" as environment variable or
@@ -5372,7 +5323,7 @@ function run() {
       `);
             }
             const slack = new slack_1.Slack();
-            const payload = yield slack.generatePayload(jobName, status, mention, mentionCondition, commitFlag, isCompactMode, isReleaseMode, created_tag, token);
+            const payload = yield slack.generatePayload(created_tag);
             console.info(`Generated payload for slack: ${JSON.stringify(payload)}`);
             yield slack.notify(url, slackOptions, payload);
             console.info('Sent message to Slack');
@@ -11166,184 +11117,30 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const github = __importStar(__webpack_require__(469));
-const rest_1 = __webpack_require__(613);
 const webhook_1 = __webpack_require__(736);
-class Block {
+class Slack {
     constructor() {
         this.context = github.context;
     }
-    get success() {
-        return {
-            color: '#2cbe4e',
-            result: 'Succeeded'
-        };
-    }
-    get failure() {
-        return {
-            color: '#cb2431',
-            result: 'Failed'
-        };
-    }
-    get cancelled() {
-        return {
-            color: '#ffc107',
-            result: 'Cancelled'
-        };
-    }
-    get isPullRequest() {
-        const { eventName } = this.context;
-        return eventName === 'pull_request';
-    }
-    /**
-     * Get slack blocks UI
-     * @returns {MrkdwnElement[]} blocks
-     */
-    get baseFields() {
-        const { sha, eventName, workflow, ref } = this.context;
-        const { owner, repo } = this.context.repo;
-        const { number } = this.context.issue;
-        const repoUrl = `https://github.com/${owner}/${repo}`;
-        let actionUrl = repoUrl;
-        let eventUrl = eventName;
-        if (this.isPullRequest) {
-            eventUrl = `<${repoUrl}/pull/${number}|${eventName}>`;
-            actionUrl += `/pull/${number}/checks`;
-        }
-        else {
-            actionUrl += `/commit/${sha}/checks`;
-        }
-        const fields = [
-            {
-                type: 'mrkdwn',
-                text: `*repository*\n<${repoUrl}|${owner}/${repo}>`
-            },
-            {
-                type: 'mrkdwn',
-                text: `*ref*\n${ref}`
-            },
-            {
-                type: 'mrkdwn',
-                text: `*event name*\n${eventUrl}`
-            },
-            {
-                type: 'mrkdwn',
-                text: `*workflow*\n<${actionUrl}|${workflow}>`
-            }
-        ];
-        return fields;
-    }
-    /**
-     * Get MrkdwnElement fields including git commit data
-     * @param {string} token
-     * @returns {Promise<MrkdwnElement[]>}
-     */
-    getCommitFields(token) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { owner, repo } = this.context.repo;
-            const head_ref = process.env.GITHUB_HEAD_REF;
-            const ref = this.isPullRequest
-                ? head_ref.replace(/refs\/heads\//, '')
-                : this.context.sha;
-            const client = new rest_1.Octokit({ auth: token });
-            const { data: commit } = yield client.repos.getCommit({ owner, repo, ref });
-            const commitMsg = commit.commit.message.split('\n')[0];
-            const commitUrl = commit.html_url;
-            const fields = [
-                {
-                    type: 'mrkdwn',
-                    text: `*commit*\n<${commitUrl}|${commitMsg}>`
-                }
-            ];
-            if (commit.author) {
-                const authorName = commit.author.login;
-                const authorUrl = commit.author.html_url;
-                fields.push({
-                    type: 'mrkdwn',
-                    text: `*author*\n<${authorUrl}|${authorName}>`
-                });
-            }
-            return fields;
-        });
-    }
-    /**
-     * Get MrkdwnElement for compact mode
-     * @returns {Promise<MrkdwnElement>}
-     */
-    getCompactModeTextField(result) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { sha, workflow, ref, actor } = this.context;
-            const { owner, repo } = this.context.repo;
-            const repoUrl = `https://github.com/${owner}/${repo}`;
-            let actionUrl = `${repoUrl}/commit/${sha}/checks`;
-            const textField = {
-                type: 'mrkdwn',
-                text: `[<${repoUrl}|${owner}/${repo}>] ${result} by ${actor} on ${ref}, check <${actionUrl}|${workflow}>`
-            };
-            return textField;
-        });
-    }
-    /**
-     * Get MrkdwnElement for release mode
-     * @returns {Promise<MrkdwnElement>}
-     */
-    getReleaseModeTextField(created_tag) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const textField = {
-                type: 'mrkdwn',
-                text: `https://github.com/weseek/growi/releases/tag/${created_tag}`
-            };
-            return textField;
-        });
-    }
-}
-class Slack {
-    /**
-     * Check if message mention is needed
-     * @param {string} mentionCondition mention condition
-     * @param {string} status job status
-     * @returns {boolean}
-     */
-    isMention(condition, status) {
-        return condition === 'always' || condition === status;
-    }
     /**
      * Generate slack payload
-     * @param {string} jobName
-     * @param {string} status
-     * @param {string} mention
-     * @param {string} mentionCondition
      * @returns {IncomingWebhookSendArguments}
      */
-    generatePayload(jobName, status, mention, mentionCondition, commitFlag, isCompactMode, isReleaseMode, created_tag, token) {
+    generatePayload(created_tag) {
         return __awaiter(this, void 0, void 0, function* () {
-            const slackBlockUI = new Block();
-            const notificationType = slackBlockUI[status];
-            const { result } = notificationType;
-            const tmpText = `${jobName} ${result}`;
-            const text = mention && this.isMention(mentionCondition, status)
-                ? `<!${mention}> ${tmpText}`
-                : tmpText;
-            let baseBlock = {
-                type: 'section'
-            };
-            if (isCompactMode) {
-                const compactModeFields = yield slackBlockUI.getCompactModeTextField(result);
-                baseBlock['text'] = compactModeFields;
-            }
-            else if (isReleaseMode) {
-                const releaseModeFields = yield slackBlockUI.getReleaseModeTextField(created_tag);
-                baseBlock['text'] = releaseModeFields;
-            }
-            else {
-                baseBlock['fields'] = slackBlockUI.baseFields;
-                if (commitFlag && token) {
-                    const commitFields = yield slackBlockUI.getCommitFields(token);
-                    Array.prototype.push.apply(baseBlock['fields'], commitFields);
+            const { owner, repo } = this.context.repo;
+            const repoUrl = `https://github.com/${owner}/${repo}/releases/tag/v${created_tag}`;
+            const text = `*Release v${created_tag}* Succeeded`;
+            const block = {
+                type: 'section',
+                text: {
+                    type: 'mrkdwn',
+                    text: `${repoUrl}`
                 }
-            }
+            };
             const attachments = {
-                color: notificationType.color,
-                blocks: [baseBlock]
+                color: '#2cbe4e',
+                blocks: [block]
             };
             const payload = {
                 text,
