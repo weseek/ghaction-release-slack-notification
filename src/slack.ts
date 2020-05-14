@@ -17,7 +17,6 @@ export class Slack {
    */
   public async generatePayload(
     created_tag: string,
-    changelog_file: string
   ): Promise<IncomingWebhookSendArguments> {
     const {owner, repo} = this.context.repo;
     const repoUrl: string = `https://github.com/${owner}/${repo}`;
@@ -30,7 +29,7 @@ export class Slack {
 
     baseBlock['text'] = {
       type: 'mrkdwn',
-      text: `${repoUrl} \n ${changelog_file}`
+      text: `${repoUrl}`
     };
 
     const attachments: MessageAttachment = {

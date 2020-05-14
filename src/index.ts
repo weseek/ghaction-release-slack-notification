@@ -10,7 +10,6 @@ async function run() {
       channel: core.getInput('channel')
     };
     const created_tag: string = core.getInput('created_tag');
-    const changelog_file: string = core.getInput('changelog_file');
 
     if (url === '') {
       throw new Error(`[Error] Missing Slack Incoming Webhooks URL.
@@ -20,7 +19,7 @@ async function run() {
     }
 
     const slack = new Slack();
-    const payload = await slack.generatePayload(created_tag, changelog_file);
+    const payload = await slack.generatePayload(created_tag);
     console.info(`Generated payload for slack: ${JSON.stringify(payload)}`);
 
     await slack.notify(url, slackOptions, payload);
