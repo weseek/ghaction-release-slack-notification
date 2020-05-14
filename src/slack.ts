@@ -1,3 +1,4 @@
+import * as github from '@actions/github';
 import {MessageAttachment} from '@slack/types';
 import {
   IncomingWebhook,
@@ -5,8 +6,11 @@ import {
   IncomingWebhookResult,
   IncomingWebhookDefaultArguments
 } from '@slack/webhook';
+import {Context} from '@actions/github/lib/context';
 
 export class Slack {
+  readonly context: Context = github.context;
+
   /**
    * Generate slack payload
    * @returns {IncomingWebhookSendArguments}
@@ -15,6 +19,9 @@ export class Slack {
     created_tag: string,
     changelog_file: string
   ): Promise<IncomingWebhookSendArguments> {
+    const {owner, repo} = this.context.repo;
+    const repoUrl: string = `https://github.com/${owner}/${repo}`;
+
     const text: string = `*Release v${created_tag}* Succeeded`;
 
     let baseBlock = {
@@ -23,7 +30,7 @@ export class Slack {
 
     baseBlock['text'] = {
       type: 'mrkdwn',
-      text: `https://github.com/weseek/growi/releases/tag/v${created_tag} \n ${changelog_file}`
+      text: `${repoUrl} \n ${changelog_file}`
     };
 
     const attachments: MessageAttachment = {
