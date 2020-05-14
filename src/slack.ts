@@ -9,12 +9,11 @@ import {
 export class Slack {
   /**
    * Generate slack payload
-   * @param {string} mention
-   * @param {string} mentionCondition
    * @returns {IncomingWebhookSendArguments}
    */
   public async generatePayload(
-    created_tag: string
+    created_tag: string,
+    changelog_file: string
   ): Promise<IncomingWebhookSendArguments> {
     const text: string = `'*Release v${created_tag}*' Succeeded`;
 
@@ -24,7 +23,7 @@ export class Slack {
 
     baseBlock['text'] = {
       type: 'mrkdwn',
-      text: `https://github.com/weseek/growi/releases/tag/v${created_tag}`
+      text: `https://github.com/weseek/growi/releases/tag/v${created_tag} \n ${changelog_file}`
     };
 
     const attachments: MessageAttachment = {

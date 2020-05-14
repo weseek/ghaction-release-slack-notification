@@ -11,6 +11,9 @@ inputs:
   created_tag: 
       description: 'created tag for release'
       required: false 
+  changelog_file:
+      description: 'change lig file'
+      required: false 
 runs:
   using: 'node12'
   main: 'dist/index.js'

@@ -1574,8 +1574,8 @@ function run() {
             const slackOptions = {
                 channel: core.getInput('channel')
             };
-            const token = core.getInput('token');
             const created_tag = core.getInput('created_tag');
+            const changelog_file = core.getInput('changelog_file');
             if (url === '') {
                 throw new Error(`[Error] Missing Slack Incoming Webhooks URL.
       Please configure "SLACK_WEBHOOK" as environment variable or
@@ -1583,7 +1583,7 @@ function run() {
       `);
             }
             const slack = new slack_1.Slack();
-            const payload = yield slack.generatePayload(created_tag);
+            const payload = yield slack.generatePayload(created_tag, changelog_file);
             console.info(`Generated payload for slack: ${JSON.stringify(payload)}`);
             yield slack.notify(url, slackOptions, payload);
             console.info('Sent message to Slack');
@@ -3398,11 +3398,9 @@ const webhook_1 = __webpack_require__(736);
 class Slack {
     /**
      * Generate slack payload
-     * @param {string} mention
-     * @param {string} mentionCondition
      * @returns {IncomingWebhookSendArguments}
      */
-    generatePayload(created_tag) {
+    generatePayload(created_tag, changelog_file) {
         return __awaiter(this, void 0, void 0, function* () {
             const text = `'*Release v${created_tag}*' Succeeded`;
             let baseBlock = {
@@ -3410,7 +3408,7 @@ class Slack {
             };
             baseBlock['text'] = {
                 type: 'mrkdwn',
-                text: `https://github.com/weseek/growi/releases/tag/v${created_tag}`
+                text: `https://github.com/weseek/growi/releases/tag/v${created_tag} \n ${changelog_file}`
             };
             const attachments = {
                 color: '#2cbe4e',
