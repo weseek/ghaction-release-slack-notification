@@ -15,7 +15,7 @@ export class Slack {
     created_tag: string,
     changelog_file: string
   ): Promise<IncomingWebhookSendArguments> {
-    const text: string = `'*Release v${created_tag}*' Succeeded`;
+    const text: string = `*Release v${created_tag}* Succeeded`;
 
     let baseBlock = {
       type: 'section'
