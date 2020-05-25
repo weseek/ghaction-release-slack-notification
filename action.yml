@@ -13,7 +13,7 @@ inputs:
     description: 'created tag for release'
     required: true 
   suffix: 
-    description: 'suffix for release ex) --nocdn'
+    description: 'suffix for release ex) -nocdn'
     required: false 
     default: ''
 runs:
