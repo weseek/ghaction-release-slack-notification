@@ -12,10 +12,6 @@ inputs:
   created_tag: 
     description: 'created tag for release'
     required: true 
-  suffix: 
-    description: 'suffix for release ex) -nocdn'
-    required: false 
-    default: ''
 runs:
   using: 'node12'
   main: 'dist/index.js'
