@@ -5316,6 +5316,7 @@ function run() {
                 icon_emoji: 'tada'
             };
             const created_tag = core.getInput('created_tag');
+            const suffix = core.getInput('suffix');
             if (url === '') {
                 throw new Error(`[Error] Missing Slack Incoming Webhooks URL.
       Please configure "SLACK_WEBHOOK" as environment variable or
@@ -5323,7 +5324,7 @@ function run() {
       `);
             }
             const slack = new slack_1.Slack();
-            const payload = yield slack.generatePayload(created_tag);
+            const payload = yield slack.generatePayload(created_tag, suffix);
             console.info(`Generated payload for slack: ${JSON.stringify(payload)}`);
             yield slack.notify(url, slackOptions, payload);
             console.info('Sent message to Slack');
@@ -11126,11 +11127,11 @@ class Slack {
      * Generate slack payload
      * @returns {IncomingWebhookSendArguments}
      */
-    generatePayload(created_tag) {
+    generatePayload(created_tag, suffix) {
         return __awaiter(this, void 0, void 0, function* () {
             const { owner, repo } = this.context.repo;
-            const repoUrl = `https://github.com/${owner}/${repo}/releases/tag/v${created_tag}`;
-            const text = `*Release v${created_tag}* Succeeded`;
+            const repoUrl = `https://github.com/${owner}/${repo}/releases/tag/${created_tag}${suffix}`;
+            const text = `*Release ${created_tag}* Succeeded`;
             const block = {
                 type: 'section',
                 text: {
