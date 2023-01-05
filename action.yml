@@ -12,6 +12,8 @@ inputs:
   created_tag: 
     description: 'created tag for release'
     required: true 
+  message:
+    required: false
 runs:
   using: 'node16'
   main: 'dist/index.js'

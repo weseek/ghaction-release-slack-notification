@@ -5,12 +5,13 @@ import {Slack} from './slack';
 
 async function run() {
   try {
-    const url: string = process.env.SLACK_WEBHOOK || core.getInput('url');
+    const url: string = process.env.SLACK_WEBHOOK ?? core.getInput('url');
     const slackOptions: IncomingWebhookDefaultArguments = {
       channel: core.getInput('channel'),
       icon_emoji: 'tada'
     };
     const created_tag: string = core.getInput('created_tag');
+    const message: string | undefined = core.getInput('message');
 
     if (url === '') {
       throw new Error(`[Error] Missing Slack Incoming Webhooks URL.
@@ -20,7 +21,7 @@ async function run() {
     }
 
     const slack = new Slack();
-    const payload = await slack.generatePayload(created_tag);
+    const payload = await slack.generatePayload(created_tag, message);
     console.info(`Generated payload for slack: ${JSON.stringify(payload)}`);
 
     await slack.notify(url, slackOptions, payload);
