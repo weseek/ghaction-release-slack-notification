@@ -5308,14 +5308,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
 const slack_1 = __webpack_require__(777);
 function run() {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const url = process.env.SLACK_WEBHOOK || core.getInput('url');
+            const url = (_a = process.env.SLACK_WEBHOOK, (_a !== null && _a !== void 0 ? _a : core.getInput('url')));
             const slackOptions = {
                 channel: core.getInput('channel'),
                 icon_emoji: 'tada'
             };
             const created_tag = core.getInput('created_tag');
+            const message = core.getInput('message');
             if (url === '') {
                 throw new Error(`[Error] Missing Slack Incoming Webhooks URL.
       Please configure "SLACK_WEBHOOK" as environment variable or
@@ -5323,7 +5325,7 @@ function run() {
       `);
             }
             const slack = new slack_1.Slack();
-            const payload = yield slack.generatePayload(created_tag);
+            const payload = yield slack.generatePayload(created_tag, message);
             console.info(`Generated payload for slack: ${JSON.stringify(payload)}`);
             yield slack.notify(url, slackOptions, payload);
             console.info('Sent message to Slack');
@@ -11126,11 +11128,11 @@ class Slack {
      * Generate slack payload
      * @returns {IncomingWebhookSendArguments}
      */
-    generatePayload(created_tag) {
+    generatePayload(created_tag, message) {
         return __awaiter(this, void 0, void 0, function* () {
             const { owner, repo } = this.context.repo;
             const repoUrl = `https://github.com/${owner}/${repo}/releases/tag/${created_tag}`;
-            const text = `*Release ${created_tag}* Succeeded`;
+            const text = (message !== null && message !== void 0 ? message : `*Release ${created_tag}* Succeeded`);
             const block = {
                 type: 'section',
                 text: {
