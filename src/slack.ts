@@ -17,7 +17,7 @@ export class Slack {
    */
   public async generatePayload(
     created_tag: string,
-    message?: string,
+    message?: string
   ): Promise<IncomingWebhookSendArguments> {
     const {owner, repo} = this.context.repo;
     const repoUrl: string = `https://github.com/${owner}/${repo}/releases/tag/${created_tag}`;
